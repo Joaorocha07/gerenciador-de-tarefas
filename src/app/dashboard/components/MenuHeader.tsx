@@ -1,11 +1,13 @@
 import React from 'react';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import SchoolIcon from '@mui/icons-material/School'
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import MenuIcon from '@mui/icons-material/Menu';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { Box, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, styled, useMediaQuery, useTheme } from '@mui/material';
 import styles from '../../../styles/page.module.css';
+import { useRouter } from 'next/navigation';
+import ModalLogout from './ModalSair';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -17,9 +19,12 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   
 
 export default function MenuHeader() {
+    const [userData, setUserData] = React.useState<{ nome: string; email: string } | null>(null);
     const [sideOpneMenu, setSideOpenMenu] = React.useState<boolean>(false);
+    const [openModal, setOpenModal] = React.useState(false);
     const isMobile = useMediaQuery('(max-width:850px)');
     const theme = useTheme();
+    const router = useRouter()
 
     const handleDrawerOpen = (): void => {
         setSideOpenMenu(() => true)
@@ -27,6 +32,16 @@ export default function MenuHeader() {
 
     const handleDrawerClose = (): void => {
         setSideOpenMenu(() => false)
+    }
+
+    const handleLogout = () => {
+        localStorage.removeItem('usuarioLogado');
+        setUserData(null);
+        router.replace('/login');
+    };
+
+    const handleOpenModal = (): void => {
+        setOpenModal(true)
     }
     return (
         <>
@@ -87,12 +102,17 @@ export default function MenuHeader() {
                                 <AssignmentIcon />
                             </ListItemIcon>
                             <ListItemText className="conteudoMenu"/>
-
-                            </ListItemButton>
+                        </ListItemButton>
+                        <ListItemButton onClick={handleOpenModal} >
+                            <ListItemIcon sx={{ display: 'flex', justifyContent: 'center', color: '#000000' }}>
+                                <ExitToAppIcon />
+                            </ListItemIcon>
+                        </ListItemButton>
                     </List>
                     </Box>
                 </Drawer>
             </Toolbar>
+            <ModalLogout setOpenModal={setOpenModal} openModal={openModal} />
         </>
     )
 }

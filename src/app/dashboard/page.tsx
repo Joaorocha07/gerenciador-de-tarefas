@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import Titulo from "./components/Titulo";
+import { Box } from "@mui/material";
+import imageFundo from './../../../public/bg-fundo.jpg';
+import Tarefas from "./components/Tarefas";
 
 export default function Dashboard() {
     const [userData, setUserData] = useState<{ nome: string; email: string } | null>(null);
@@ -15,7 +18,7 @@ export default function Dashboard() {
             const parsedUserData = JSON.parse(storedUserData);
             setUserData(parsedUserData);
         } else {
-            router.replace('/login'); // Redirecionar para a página de login se não estiver autenticado
+            router.replace('/login');
         }
     }, [router]);
 
@@ -26,12 +29,25 @@ export default function Dashboard() {
     };
 
     if (!isAuthenticated()) {
-        return null; // Retorne alguma mensagem ou componente para quando não estiver autenticado
+        return null; 
     }
     return (
         <>
-            <Header />
-            <Titulo />
+            <Box
+                position="absolute"
+                width="100vw"
+                height="100vh"
+                sx={{
+                    backgroundImage: `url(${imageFundo.src})`,
+                    backgroundSize: 'cover',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center'
+                }}
+            >
+                <Header />
+                <Titulo />
+                <Tarefas />
+            </Box>
             <h1>Você está logado!</h1>
             {userData && (
                 <div>
