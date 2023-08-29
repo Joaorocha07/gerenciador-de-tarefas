@@ -1,8 +1,19 @@
-import { Box, Button, InputAdornment, TextField, Typography } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Box, Button, Typography } from "@mui/material";
 import FilterIcon from '@mui/icons-material/Filter';
+import React from "react";
+import ModalTarefas from "./ModalTarefas";
+import PesquisarTarefas from "./PesquisarTarefas";
 
 export default function Titulo() {
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+    const openModal = (): void => {
+        setIsModalOpen(true)
+    }
+    
+    const closeModal = (): void => {
+        setIsModalOpen(false)
+    }
     return (
         <Box 
             sx={{ 
@@ -22,29 +33,23 @@ export default function Titulo() {
             <Typography variant="h4" sx={{ margin: 'auto' }} gutterBottom>
                 Minhas tarefas
             </Typography>
-            <Button variant="outlined" sx={{ height: '40px', width: '85px', margin: 'auto' }}>CRIAR</Button>
-            <TextField
-                label='Buscar'
-                variant='outlined'
-                size='small'
+            <Button
+                variant="outlined" 
                 sx={{ 
-                    width: '65%',
-                    height: '40px', 
-                    background: '#FFF',
-                    boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
-                    border: 'none',
-                    borderColor: '#FFF',
+                    height: '40px',
+                    width: '85px',
                     margin: 'auto'
                 }}
-                InputProps={{
-                    endAdornment: (
-                        <InputAdornment position='end'>
-                            <SearchIcon />
-                        </InputAdornment>
-                    ),
-                }}
-            />
-            <Box sx={{  
+                onClick={openModal}
+            >
+                CRIAR
+            </Button>
+            {isModalOpen && (
+                <ModalTarefas isOpen={isModalOpen} onClose={closeModal} />
+            )}
+            <PesquisarTarefas />
+            <Box 
+                sx={{  
                     display: 'flex', 
                     alignItems: 'center',
                     justifyContent: 'center',

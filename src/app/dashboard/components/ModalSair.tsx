@@ -27,8 +27,13 @@ export default function ModalLogout({
     setLoading(true);
     localStorage.removeItem('usuarioLogado');
     setUserData(null);
-    router.replace('/login');
+    setTimeout(() => {
+      router.replace('/login');
+      setLoading(false);
+      window.location.reload();
+    }, 1500);
   };
+
   return (
     <Modal
       open={openModal}

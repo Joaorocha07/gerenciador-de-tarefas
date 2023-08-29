@@ -54,8 +54,8 @@ export default function Header() {
                         alignItems: "center",
                         justifyContent: 'center',
                         background: "rgba(152, 152, 152, 0.11)",
-                        width: "14%",
-                        height: "7.5vh",
+                        width: "16%",
+                        height: "7vh",
                         padding: "10px 15px",
                         borderRadius: "15px",
                         mr: '5rem',
@@ -82,8 +82,8 @@ export default function Header() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: 'center',
-                        width: "14%",
-                        height: "7.5vh",
+                        width: "16%",
+                        height: "7vh",
                         background: "rgba(152, 152, 152, 0.11)",
                         padding: "10px 15px",
                         borderRadius: "15px",
@@ -103,12 +103,12 @@ export default function Header() {
                             <Avatar 
                                 sx={{ 
                                     bgcolor: deepOrange[500],
-                                    width: '60px',
-                                    height: '60px',
+                                    width: '50px',
+                                    height: '50px',
                                     mr: '1rem'
                                 }}
                             >
-                                J
+                                {userData?.nome ? userData.nome[0].toUpperCase() : "N"}
                             </Avatar>
                             {userData?.nome || "Nome do Usuário"}
                     </Typography>

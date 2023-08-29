@@ -19,12 +19,10 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   
 
 export default function MenuHeader() {
-    const [userData, setUserData] = React.useState<{ nome: string; email: string } | null>(null);
     const [sideOpneMenu, setSideOpenMenu] = React.useState<boolean>(false);
     const [openModal, setOpenModal] = React.useState(false);
     const isMobile = useMediaQuery('(max-width:850px)');
     const theme = useTheme();
-    const router = useRouter()
 
     const handleDrawerOpen = (): void => {
         setSideOpenMenu(() => true)
@@ -33,12 +31,6 @@ export default function MenuHeader() {
     const handleDrawerClose = (): void => {
         setSideOpenMenu(() => false)
     }
-
-    const handleLogout = () => {
-        localStorage.removeItem('usuarioLogado');
-        setUserData(null);
-        router.replace('/login');
-    };
 
     const handleOpenModal = (): void => {
         setOpenModal(true)

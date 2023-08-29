@@ -1,9 +1,99 @@
 'use client'
 
-import { Box, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material"
+import { Box, Checkbox, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material"
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import React, { useEffect } from "react";
+
+interface Tarefa {
+    id: string;
+    titulo: string;
+    conteudo: string;
+    prazoIncial: string; 
+    prazoFinal: string; 
+    cor: string;
+    userId: string;
+}
 
 export default function Tarefas() {
+    const [tarefas, setTarefas] = React.useState<Tarefa[]>([]);
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const tarefasPerPage = 7;
+
+    useEffect(() => {
+        const storedTarefas = localStorage.getItem('tarefas');
+        if (storedTarefas) {
+            setTarefas(JSON.parse(storedTarefas));
+        }
+    }, [tarefas]);
+
+    function extrairPrimeiras4Palavras(texto: string): string {
+        const palavras = texto.split(' ');
+        const primeiras4Palavras = palavras.slice(0, 4).join(' ');
+        return primeiras4Palavras;
+    }
+
+    const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+        setCurrentPage(page);
+    };
+
+    const renderTarefas = () => {
+        const startIndex = (currentPage - 1) * tarefasPerPage;
+        const endIndex = Math.min(startIndex + tarefasPerPage, tarefas.length);
+
+        const usuarioLogadoString = localStorage.getItem('usuarioLogado');
+
+        if (usuarioLogadoString !== null) {
+
+            const usuarioLogado = JSON.parse(usuarioLogadoString);
+
+            const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
+
+            return tarefasDoUsuarioLogado.slice(startIndex, endIndex).map((tarefa) => (
+                    <TableRow
+                        key={tarefa.id}
+                        sx={{
+                            transition: "background-color 0.3s",
+                            cursor: "pointer",
+                            "&:hover": {
+                                backgroundColor: "rgba(173, 216, 230, 0.5)", 
+                            },
+                        }}
+                    >
+                        <TableCell>
+                            <Checkbox />
+                        </TableCell>
+                        <TableCell>{tarefa.titulo}</TableCell>
+                        <TableCell>{extrairPrimeiras4Palavras(tarefa.conteudo)}</TableCell>
+                        <TableCell>{tarefa.prazoIncial}</TableCell>
+                        <TableCell>{tarefa.prazoFinal}</TableCell>
+                        <TableCell>
+                            <div
+                            style={{
+                                width: "20px", 
+                                height: "20px",
+                                borderRadius: '5px',
+                                backgroundColor: 'black',
+                            }}
+                            ></div>
+                        </TableCell>
+                    </TableRow>
+            ));
+        }
+    };
+    
+    const usuarioLogadoString = localStorage.getItem('usuarioLogado');
+
+    let totalTarefasUsuarioLogado = 0;
+
+    if (usuarioLogadoString !== null) {
+
+        const usuarioLogado = JSON.parse(usuarioLogadoString);
+        
+        const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
+        totalTarefasUsuarioLogado = tarefasDoUsuarioLogado.length;
+        const totalPages = Math.ceil(totalTarefasUsuarioLogado / tarefasPerPage);
+    }
+
     return (
         <>
             <Box
@@ -47,35 +137,18 @@ export default function Tarefas() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow
-                            sx={{
-                                transition: "background-color 0.3s",
-                                cursor: "pointer",
-                                "&:hover": {
-                                    backgroundColor: "rgba(173, 216, 230, 0.5)", // Cor de fundo azul claro transparente
-                                },
-                            }}
-                        >
-                            <TableCell>
-                                <Checkbox />
-                            </TableCell>
-                            <TableCell>Exemplo de Nome</TableCell>
-                            <TableCell>Exemplo de Atividade</TableCell>
-                            <TableCell>Exemplo de Prazo Inicial</TableCell>
-                            <TableCell>Exemplo de Prazo Final</TableCell>
-                            <TableCell>
-                                <div
-                                style={{
-                                    width: "20px", // Ajuste o tamanho do quadrado conforme necessário
-                                    height: "20px",
-                                    borderRadius: '5px',
-                                    backgroundColor: 'black',
-                                }}
-                                ></div>
-                            </TableCell>
-                        </TableRow>
+                        {renderTarefas()}
                     </TableBody>
                     </Table>
+                    {totalTarefasUsuarioLogado >= tarefasPerPage && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                            <Pagination
+                                count={Math.ceil(tarefas.length / tarefasPerPage)}
+                                page={currentPage}
+                                onChange={handlePageChange}
+                            />
+                        </Box>
+                    )}
                 </TableContainer>
             </Box>
         </>
