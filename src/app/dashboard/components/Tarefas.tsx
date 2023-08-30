@@ -3,21 +3,25 @@
 import { Box, Checkbox, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material"
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import React, { useEffect } from "react";
-
-interface Tarefa {
-    id: string;
-    titulo: string;
-    conteudo: string;
-    prazoIncial: string; 
-    prazoFinal: string; 
-    cor: string;
-    userId: string;
-}
+import { Tarefa } from "@/types/tarefa";
+import ModalVisuTarefas from "./ModalVisuTarefas";
 
 export default function Tarefas() {
     const [tarefas, setTarefas] = React.useState<Tarefa[]>([]);
-    const [currentPage, setCurrentPage] = React.useState(1);
-    const tarefasPerPage = 7;
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [paginaAtual, setPaginaAtual] = React.useState(1);
+    const [tarefaSelecionada, setTarefaSelecionada] = React.useState<Tarefa | null>(null);
+    const tarefasPorPagina = 7;
+
+    const openModal = (tarefa: Tarefa): void => {
+        setTarefaSelecionada(tarefa);
+        setIsModalOpen(true)
+    }
+    
+    const closeModal = (): void => {
+        setTarefaSelecionada(null);
+        setIsModalOpen(false)
+    }
 
     useEffect(() => {
         const storedTarefas = localStorage.getItem('tarefas');
@@ -33,12 +37,12 @@ export default function Tarefas() {
     }
 
     const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
-        setCurrentPage(page);
+        setPaginaAtual(page);
     };
 
-    const renderTarefas = () => {
-        const startIndex = (currentPage - 1) * tarefasPerPage;
-        const endIndex = Math.min(startIndex + tarefasPerPage, tarefas.length);
+    const renderTarefas = (): any => {
+        const listaIncial = (paginaAtual - 1) * tarefasPorPagina;
+        const listaFinal = Math.min(listaIncial + tarefasPorPagina, tarefas.length);
 
         const usuarioLogadoString = localStorage.getItem('usuarioLogado');
 
@@ -48,9 +52,10 @@ export default function Tarefas() {
 
             const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
 
-            return tarefasDoUsuarioLogado.slice(startIndex, endIndex).map((tarefa) => (
+            return tarefasDoUsuarioLogado.slice(listaIncial, listaFinal).map((tarefa) => (
                     <TableRow
                         key={tarefa.id}
+                        onClick={() => openModal(tarefa)}
                         sx={{
                             transition: "background-color 0.3s",
                             cursor: "pointer",
@@ -59,6 +64,9 @@ export default function Tarefas() {
                             },
                         }}
                     >
+                        {isModalOpen && (
+                            <ModalVisuTarefas isOpen={isModalOpen} onClose={closeModal} tarefaSelecionada={tarefaSelecionada} />
+                        )}
                         <TableCell>
                             <Checkbox />
                         </TableCell>
@@ -72,7 +80,7 @@ export default function Tarefas() {
                                 width: "20px", 
                                 height: "20px",
                                 borderRadius: '5px',
-                                backgroundColor: 'black',
+                                backgroundColor: `${tarefa.cor}`,
                             }}
                             ></div>
                         </TableCell>
@@ -91,7 +99,7 @@ export default function Tarefas() {
         
         const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
         totalTarefasUsuarioLogado = tarefasDoUsuarioLogado.length;
-        const totalPages = Math.ceil(totalTarefasUsuarioLogado / tarefasPerPage);
+        const totalPages = Math.ceil(totalTarefasUsuarioLogado / tarefasPorPagina);
     }
 
     return (
@@ -140,11 +148,11 @@ export default function Tarefas() {
                         {renderTarefas()}
                     </TableBody>
                     </Table>
-                    {totalTarefasUsuarioLogado >= tarefasPerPage && (
+                    {totalTarefasUsuarioLogado >= tarefasPorPagina && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                             <Pagination
-                                count={Math.ceil(tarefas.length / tarefasPerPage)}
-                                page={currentPage}
+                                count={Math.ceil(tarefas.length / tarefasPorPagina)}
+                                page={paginaAtual}
                                 onChange={handlePageChange}
                             />
                         </Box>

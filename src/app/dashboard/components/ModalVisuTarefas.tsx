@@ -1,5 +1,3 @@
-'use client';
-
 import { 
     Alert, 
     Box, 
@@ -9,31 +7,84 @@ import {
     Modal, 
     TextField, 
     Typography 
-} from "@mui/material";
+    } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import React from "react";
+import React, { useEffect } from "react";
 import { Tarefa } from "@/types/tarefa";
 
-export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
-    const [tarefas, setTarefas] = React.useState<Tarefa[]>([]);
+export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }: IModalVisuTarefasProps) {
+    const [mensagem, setMensagem] = React.useState('');
+    const [mensagemTipo, setMensagemTipo] = React.useState<any>('');
+    const [modoEdicao, setModoEdicao] = React.useState(false);
+    const [isLoading, setLoading] = React.useState(false);
+
     const [titulo, setTitulo] = React.useState('');
     const [conteudo, setConteudo] = React.useState('');
     const [prazoIncial, setPrazoInicial] = React.useState('');
     const [prazoFinal, setPrazoFinal] = React.useState('');
     const [cor, setCor] = React.useState('');
 
-    const [tarefasContador, setTarefasContador] = React.useState<number>(0);
-    const [mensagem, setMensagem] = React.useState('');
-    const [mensagemTipo, setMensagemTipo] = React.useState<any>('');
-
-    const [isLoading, setLoading] = React.useState(false);
-
-    const handleCadastrarTarefa = async (): Promise<void> => {
-        if (!titulo) {
-            exibirMensagem('O nome da tarefa não foi especificado.', 'error');
-            return;
+    useEffect(() => {
+        if (tarefaSelecionada) {
+            setTitulo(tarefaSelecionada.titulo);
+            setConteudo(tarefaSelecionada.conteudo);
+            setPrazoInicial(tarefaSelecionada.prazoInicial);
+            setPrazoFinal(tarefaSelecionada.prazoFinal);
+            setCor(tarefaSelecionada.cor);
         }
+    }, [tarefaSelecionada]);
 
+    const handleEditarClick = () => {
+        if (modoEdicao) {
+            // Aqui você pode implementar a lógica para salvar as alterações
+            setModoEdicao(false); // Sai do modo de edição
+            if (!titulo && !conteudo && !prazoIncial && !prazoFinal && !cor) {
+                exibirMensagem('Nenhuma alteração foi feita.', 'info');
+                return;
+            }
+    
+            setLoading(true);
+    
+            const usuarioLogadoString = localStorage.getItem('usuarioLogado');
+    
+            if (usuarioLogadoString !== null) {
+                const usuarioLogado = JSON.parse(usuarioLogadoString);
+                const userId = usuarioLogado.id;
+    
+                const storedTarefas = localStorage.getItem('tarefas');
+                const tarefas = storedTarefas ? JSON.parse(storedTarefas) : [];
+    
+                const tarefaEditada = {
+                    ...tarefaSelecionada,
+                    titulo: titulo || tarefaSelecionada.titulo,
+                    conteudo: conteudo || tarefaSelecionada.conteudo,
+                    prazoInicial: prazoIncial || tarefaSelecionada.prazoInicial,
+                    prazoFinal: prazoFinal || tarefaSelecionada.prazoFinal,
+                    cor: cor || tarefaSelecionada.cor
+                };
+    
+                const tarefasAtualizadas = tarefas.map((tarefa: Tarefa) =>
+                    tarefa.id === tarefaSelecionada.id && tarefa.userId === userId
+                        ? tarefaEditada
+                        : tarefa
+                );
+    
+                localStorage.setItem('tarefas', JSON.stringify(tarefasAtualizadas));
+    
+                exibirMensagem('Tarefa editada com sucesso!', 'success');
+    
+                setLoading(false);
+    
+                setTimeout(() => {
+                    onClose();
+                }, 1000);
+            }
+        } else {
+            setModoEdicao(true); 
+        }
+    }
+    
+    const handleExcluirClick = async (): Promise<void> => {
         setLoading(true);
 
         const usuarioLogadoString = localStorage.getItem('usuarioLogado');
@@ -42,55 +93,30 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
             const usuarioLogado = JSON.parse(usuarioLogadoString);
             const userId = usuarioLogado.id;
 
-            const novaTarefa = {
-                id: generateUniqueId(),
-                titulo,
-                conteudo,
-                prazoIncial,
-                prazoFinal,
-                cor,
-                userId: userId,
-            };
+            const storedTarefas = localStorage.getItem('tarefas');
+            const tarefas = storedTarefas ? JSON.parse(storedTarefas) : [];
+
+            exibirMensagem('Tarefa excluída com sucesso!', 'success');
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            const storedTarefas = localStorage.getItem('tarefas');
-
-            const tarefas = storedTarefas ? JSON.parse(storedTarefas) : [];
-
-            tarefas.push(novaTarefa);
-
-            localStorage.setItem('tarefas', JSON.stringify(tarefas));
-
-            exibirMensagem('Cadastro bem-sucedido!', 'success');
-
-            setTarefas([...tarefas, novaTarefa]);
-
             setLoading(false);
 
-            setTimeout(() => {
-                onClose();
-            }, 1000);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            setTitulo('');
-            setConteudo('');
-            setPrazoInicial('');
-            setPrazoFinal('');
-            setCor('');
+            const tarefasRestantes = tarefas.filter((tarefa: Tarefa) => tarefa.id !== tarefaSelecionada.id || tarefa.userId !== userId);
+
+            localStorage.setItem('tarefas', JSON.stringify(tarefasRestantes));
+
+            onClose();
         }
     };
-
 
     const exibirMensagem = (texto: string, tipo: string) => {
         setMensagem(texto);
         setMensagemTipo(tipo);
     };
 
-    const { v4: uuidv4 } = require('uuid');
-
-    const generateUniqueId = () => {
-        return uuidv4();
-    };
     return (
         <>
             <Modal
@@ -137,12 +163,15 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                               }}
                         >
                             <Typography id="modal-title" variant="h6" component="h2">
-                                Nova tarefa
+                                Sua tarefa
                             </Typography>
                             <IconButton
                                 edge="end"
                                 color="inherit"
-                                onClick={onClose}
+                                onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    onClose(); 
+                                }}
                                 aria-label="close"
                             >
                                 <CloseIcon />
@@ -160,6 +189,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                         <form action="">
                             <Box sx={{ marginBottom: '16px' }}>
                                 <TextField 
+                                    disabled={!modoEdicao}
                                     variant="outlined"
                                     label="Nome da tarefa"
                                     name="Nome da tarefa"
@@ -173,6 +203,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                                 />
 
                                 <TextField
+                                    disabled={!modoEdicao}
                                     label="Descrição"
                                     multiline
                                     minRows={6}
@@ -180,13 +211,13 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                                     fullWidth
                                     value={conteudo}
                                     onChange={(e) => setConteudo(e.target.value)}
-                                    inputProps={{ maxLength: 2000 }}
                                     sx={{
                                         marginBottom: '1rem'
                                     }}
                                 />
 
                                 <TextField 
+                                    disabled={!modoEdicao}
                                     label="Prazo inicial"
                                     name="Prazo inicial"
                                     type="date"
@@ -207,6 +238,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                                 />
                                 
                                 <TextField 
+                                    disabled={!modoEdicao}
                                     label="Prazo Final"
                                     name="Prazo final"
                                     type="date"
@@ -219,6 +251,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                                 />
 
                                  <TextField
+                                    disabled={!modoEdicao}
                                     type="color"
                                     label="Cor da tarefa"
                                     value={cor}
@@ -227,19 +260,33 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                                     margin="normal"
                                 />
 
+                                {modoEdicao ? (
+                                    <Button
+                                        variant="outlined" 
+                                        onClick={handleEditarClick}
+                                        sx={{
+                                            mr: 2
+                                        }}
+                                    >
+                                        Salvar
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="outlined" 
+                                        onClick={handleEditarClick}
+                                        sx={{
+                                            mr: 2
+                                        }}
+                                    >
+                                        Editar
+                                    </Button>
+                                )}
                                 <Button
-                                    fullWidth
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleCadastrarTarefa}
-                                    disabled={isLoading}
-                                    sx={{
-                                        marginTop: '1rem'
-                                    }}
+                                    variant="outlined" 
+                                    onClick={handleExcluirClick}
                                 >
-                                    {isLoading ? <CircularProgress size={24} /> : 'Cadastra Tarefa'}
+                                    {isLoading ? <CircularProgress size={24} /> : 'Excluir'}
                                 </Button>
-
                             </Box>
                         </form>
 

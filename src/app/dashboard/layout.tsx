@@ -6,10 +6,8 @@ interface IRootLayout {
 
 export default function RootLayout({ children }: IRootLayout): JSX.Element {
   return (
-    <html lang="pt-br">
-      <body suppressHydrationWarning={true}>
-        {children}
-      </body>
-    </html>
+    <div suppressHydrationWarning={true}>
+      {children}
+    </div>
   )
 }
