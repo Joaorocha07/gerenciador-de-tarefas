@@ -1,3 +1,4 @@
+'use client'
 import { 
     Alert, 
     Box, 
@@ -24,64 +25,81 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
     const [prazoFinal, setPrazoFinal] = React.useState('');
     const [cor, setCor] = React.useState('');
 
+    // useEffect(() => {
+    //     if (tarefaSelecionada) {
+    //         // setTitulo(tarefaSelecionada.titulo);
+    //         setConteudo(tarefaSelecionada.conteudo);
+    //         setPrazoInicial(tarefaSelecionada.prazoInicial);
+    //         setPrazoFinal(tarefaSelecionada.prazoFinal);
+    //         setCor(tarefaSelecionada.cor);
+    //     }
+    // }, [tarefaSelecionada]);
+
     useEffect(() => {
         if (tarefaSelecionada) {
-            setTitulo(tarefaSelecionada.titulo);
-            setConteudo(tarefaSelecionada.conteudo);
-            setPrazoInicial(tarefaSelecionada.prazoInicial);
-            setPrazoFinal(tarefaSelecionada.prazoFinal);
-            setCor(tarefaSelecionada.cor);
+            if (modoEdicao) {
+                setTitulo(titulo);
+                setConteudo(conteudo);
+                setPrazoInicial(prazoIncial);
+                setPrazoFinal(prazoFinal);
+                setCor(cor);
+            } else {
+                setTitulo(tarefaSelecionada.titulo);
+                setConteudo(tarefaSelecionada.conteudo);
+                setPrazoInicial(tarefaSelecionada.prazoInicial);
+                setPrazoFinal(tarefaSelecionada.prazoFinal);
+                setCor(tarefaSelecionada.cor);
+            }
         }
-    }, [tarefaSelecionada]);
+    }, [conteudo, cor, modoEdicao, prazoFinal, prazoIncial, tarefaSelecionada, titulo]);
+
+    const handleSalvarClick = () => {
+        setModoEdicao(false); 
+        if (!titulo && !conteudo && !prazoIncial && !prazoFinal && !cor) {
+            exibirMensagem('Nenhuma alteração foi feita.', 'info');
+            return;
+        }
+
+        setLoading(true);
+
+        const usuarioLogadoString = localStorage.getItem('usuarioLogado');
+
+        if (usuarioLogadoString !== null) {
+            const usuarioLogado = JSON.parse(usuarioLogadoString);
+            const userId = usuarioLogado.id;
+
+            const storedTarefas = localStorage.getItem('tarefas');
+            const tarefas = storedTarefas ? JSON.parse(storedTarefas) : [];
+
+            const tarefaEditada = {
+                ...tarefaSelecionada,
+                titulo: tarefaSelecionada.titulo,
+                conteudo: conteudo || tarefaSelecionada.conteudo,
+                prazoInicial: prazoIncial || tarefaSelecionada.prazoInicial,
+                prazoFinal: prazoFinal || tarefaSelecionada.prazoFinal,
+                cor: cor || tarefaSelecionada.cor
+            };
+
+            const tarefasAtualizadas = tarefas.map((tarefa: Tarefa) =>
+                tarefa.id === tarefaSelecionada.id && tarefa.userId === userId
+                    ? tarefaEditada
+                    : tarefa
+            );
+
+            localStorage.setItem('tarefas', JSON.stringify(tarefasAtualizadas));
+
+            exibirMensagem('Tarefa editada com sucesso!', 'success');
+
+            setLoading(false);
+
+            setTimeout(() => {
+                onClose();
+            }, 1000);
+        }
+    }
 
     const handleEditarClick = () => {
-        if (modoEdicao) {
-            // Aqui você pode implementar a lógica para salvar as alterações
-            setModoEdicao(false); // Sai do modo de edição
-            if (!titulo && !conteudo && !prazoIncial && !prazoFinal && !cor) {
-                exibirMensagem('Nenhuma alteração foi feita.', 'info');
-                return;
-            }
-    
-            setLoading(true);
-    
-            const usuarioLogadoString = localStorage.getItem('usuarioLogado');
-    
-            if (usuarioLogadoString !== null) {
-                const usuarioLogado = JSON.parse(usuarioLogadoString);
-                const userId = usuarioLogado.id;
-    
-                const storedTarefas = localStorage.getItem('tarefas');
-                const tarefas = storedTarefas ? JSON.parse(storedTarefas) : [];
-    
-                const tarefaEditada = {
-                    ...tarefaSelecionada,
-                    titulo: titulo || tarefaSelecionada.titulo,
-                    conteudo: conteudo || tarefaSelecionada.conteudo,
-                    prazoInicial: prazoIncial || tarefaSelecionada.prazoInicial,
-                    prazoFinal: prazoFinal || tarefaSelecionada.prazoFinal,
-                    cor: cor || tarefaSelecionada.cor
-                };
-    
-                const tarefasAtualizadas = tarefas.map((tarefa: Tarefa) =>
-                    tarefa.id === tarefaSelecionada.id && tarefa.userId === userId
-                        ? tarefaEditada
-                        : tarefa
-                );
-    
-                localStorage.setItem('tarefas', JSON.stringify(tarefasAtualizadas));
-    
-                exibirMensagem('Tarefa editada com sucesso!', 'success');
-    
-                setLoading(false);
-    
-                setTimeout(() => {
-                    onClose();
-                }, 1000);
-            }
-        } else {
-            setModoEdicao(true); 
-        }
+        setModoEdicao(true); 
     }
     
     const handleExcluirClick = async (): Promise<void> => {
@@ -196,6 +214,7 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
                                     type="text"
                                     value={titulo}
                                     onChange={(e) => setTitulo(e.target.value)}
+                                    onBlur={() => {}}
                                     fullWidth
                                     sx={{
                                         marginBottom: '1rem'
@@ -263,7 +282,7 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
                                 {modoEdicao ? (
                                     <Button
                                         variant="outlined" 
-                                        onClick={handleEditarClick}
+                                        onClick={handleSalvarClick}
                                         sx={{
                                             mr: 2
                                         }}

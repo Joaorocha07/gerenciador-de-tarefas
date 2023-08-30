@@ -23,12 +23,28 @@ export default function Tarefas() {
         setIsModalOpen(false)
     }
 
+    // useEffect(() => {
+    //     const storedTarefas = localStorage.getItem('tarefas');
+    //     if (storedTarefas) {
+    //         setTarefas(JSON.parse(storedTarefas));
+    //     }
+    // }, [tarefas]);
+
     useEffect(() => {
         const storedTarefas = localStorage.getItem('tarefas');
         if (storedTarefas) {
             setTarefas(JSON.parse(storedTarefas));
         }
-    }, [tarefas]);
+
+        const intervalId = setInterval(() => {
+            const storedTarefas = localStorage.getItem('tarefas');
+            if (storedTarefas) {
+                setTarefas(JSON.parse(storedTarefas));
+            }
+        }, 600); 
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     function extrairPrimeiras4Palavras(texto: string): string {
         const palavras = texto.split(' ');

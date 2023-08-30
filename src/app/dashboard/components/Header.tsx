@@ -1,3 +1,4 @@
+'use client'
 import { Avatar, Box, Typography } from "@mui/material";
 import AssistantPhotoIcon from '@mui/icons-material/AssistantPhoto';
 import { deepOrange } from "@mui/material/colors";
