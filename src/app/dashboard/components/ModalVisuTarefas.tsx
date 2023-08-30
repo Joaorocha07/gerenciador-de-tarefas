@@ -207,7 +207,7 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
                         <form action="">
                             <Box sx={{ marginBottom: '16px' }}>
                                 <TextField 
-                                    disabled={!modoEdicao}
+                                    disabled
                                     variant="outlined"
                                     label="Nome da tarefa"
                                     name="Nome da tarefa"

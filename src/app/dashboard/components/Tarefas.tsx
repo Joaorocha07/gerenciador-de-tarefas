@@ -1,7 +1,8 @@
 'use client'
 
-import { Box, Checkbox, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material"
+import { Box, Checkbox, IconButton, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material"
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import DeleteIcon from '@mui/icons-material/Delete';
 import React, { useEffect } from "react";
 import { Tarefa } from "@/types/tarefa";
 import ModalVisuTarefas from "./ModalVisuTarefas";
@@ -11,7 +12,9 @@ export default function Tarefas() {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [paginaAtual, setPaginaAtual] = React.useState(1);
     const [tarefaSelecionada, setTarefaSelecionada] = React.useState<Tarefa | null>(null);
-    const tarefasPorPagina = 7;
+    const [tarefasSelecionadas, setTarefasSelecionadas] = React.useState<string[]>([]);
+    const [todosSelecionados, setTodosSelecionados] = React.useState(false);
+    const tarefasPorPagina = 6;
 
     const openModal = (tarefa: Tarefa): void => {
         setTarefaSelecionada(tarefa);
@@ -23,12 +26,23 @@ export default function Tarefas() {
         setIsModalOpen(false)
     }
 
-    // useEffect(() => {
-    //     const storedTarefas = localStorage.getItem('tarefas');
-    //     if (storedTarefas) {
-    //         setTarefas(JSON.parse(storedTarefas));
-    //     }
-    // }, [tarefas]);
+    const toggleTarefaSelecionada = (tarefaId: string) => {
+        if (tarefasSelecionadas.includes(tarefaId)) {
+            setTarefasSelecionadas(tarefasSelecionadas.filter(id => id !== tarefaId));
+        } else {
+            setTarefasSelecionadas([...tarefasSelecionadas, tarefaId]);
+        }
+    };
+    
+    const toggleTodosSelecionados = () => {
+        if (todosSelecionados) {
+            setTarefasSelecionadas([]);
+        } else {
+            const idsTarefas = tarefas.map(tarefa => tarefa.id);
+            setTarefasSelecionadas(idsTarefas);
+        }
+        setTodosSelecionados(!todosSelecionados);
+    };
 
     useEffect(() => {
         const storedTarefas = localStorage.getItem('tarefas');
@@ -56,6 +70,33 @@ export default function Tarefas() {
         setPaginaAtual(page);
     };
 
+    const handleExcluirTarefas = (idsTarefas: string[]) => {
+        const usuarioLogadoString = localStorage.getItem('usuarioLogado');
+        if (usuarioLogadoString !== null) {
+            const usuarioLogado = JSON.parse(usuarioLogadoString);
+            const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
+            const tarefasSelecionadasDoUsuario = tarefasDoUsuarioLogado.filter(tarefa => idsTarefas.includes(tarefa.id));
+
+            // Se as tarefas selecionadas forem todas do usuário logado, exclua-as.
+            if (tarefasSelecionadasDoUsuario.length === idsTarefas.length) {
+                const tarefasAtualizadas = tarefas.filter(tarefa => !idsTarefas.includes(tarefa.id));
+                setTarefas(tarefasAtualizadas);
+                setTarefasSelecionadas([]);
+
+                // Atualize o armazenamento local com as tarefas atualizadas, se necessário.
+                localStorage.setItem('tarefas', JSON.stringify(tarefasAtualizadas));
+            } else {
+                // Caso contrário, mostre uma mensagem de erro ou aviso.
+                alert('Ainda não tem como apagar todos de uma vez!');
+            }
+        }
+    };  
+
+    const openModalForTarefa = (tarefa: Tarefa) => {
+        setTarefaSelecionada(tarefa);
+        setIsModalOpen(true);
+    };
+
     const renderTarefas = (): any => {
         const listaIncial = (paginaAtual - 1) * tarefasPorPagina;
         const listaFinal = Math.min(listaIncial + tarefasPorPagina, tarefas.length);
@@ -71,7 +112,6 @@ export default function Tarefas() {
             return tarefasDoUsuarioLogado.slice(listaIncial, listaFinal).map((tarefa) => (
                     <TableRow
                         key={tarefa.id}
-                        onClick={() => openModal(tarefa)}
                         sx={{
                             transition: "background-color 0.3s",
                             cursor: "pointer",
@@ -80,25 +120,25 @@ export default function Tarefas() {
                             },
                         }}
                     >
-                        {isModalOpen && (
-                            <ModalVisuTarefas isOpen={isModalOpen} onClose={closeModal} tarefaSelecionada={tarefaSelecionada} />
-                        )}
                         <TableCell>
-                            <Checkbox />
+                            <Checkbox
+                                checked={tarefasSelecionadas.includes(tarefa.id)}
+                                onChange={() => toggleTarefaSelecionada(tarefa.id)}
+                            />
                         </TableCell>
-                        <TableCell>{tarefa.titulo}</TableCell>
-                        <TableCell>{extrairPrimeiras4Palavras(tarefa.conteudo)}</TableCell>
-                        <TableCell>{tarefa.prazoIncial}</TableCell>
-                        <TableCell>{tarefa.prazoFinal}</TableCell>
-                        <TableCell>
+                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.titulo}</TableCell>
+                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{extrairPrimeiras4Palavras(tarefa.conteudo)}</TableCell>
+                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoIncial}</TableCell>
+                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoFinal}</TableCell>
+                        <TableCell onClick={() => openModalForTarefa(tarefa)}>
                             <div
-                            style={{
-                                width: "20px", 
-                                height: "20px",
-                                borderRadius: '5px',
-                                backgroundColor: `${tarefa.cor}`,
-                            }}
-                            ></div>
+                                style={{
+                                    width: "20px", 
+                                    height: "20px",
+                                    borderRadius: '5px',
+                                    backgroundColor: `${tarefa.cor}`,
+                                }}
+                            />
                         </TableCell>
                     </TableRow>
             ));
@@ -120,6 +160,10 @@ export default function Tarefas() {
 
     return (
         <>
+            {isModalOpen && (
+                <ModalVisuTarefas isOpen={isModalOpen} onClose={closeModal} tarefaSelecionada={tarefaSelecionada} />
+            )}
+
             <Box
                 sx={{ 
                     display: 'flex',
@@ -141,7 +185,7 @@ export default function Tarefas() {
                     <TableHead>
                         <TableRow>
                             <TableCell>
-                                <Checkbox />
+                                <Checkbox checked={todosSelecionados} onChange={toggleTodosSelecionados} />
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel>NOME</TableSortLabel>
@@ -172,6 +216,15 @@ export default function Tarefas() {
                                 onChange={handlePageChange}
                             />
                         </Box>
+                    )}
+                    {tarefasSelecionadas.length > 0 && (
+                        <IconButton
+                            sx={{ mr: 1, ml: 2 }}
+                            onClick={() => handleExcluirTarefas(tarefasSelecionadas)}
+                            aria-label="Excluir tarefas selecionadas"
+                        >
+                            <DeleteIcon />
+                        </IconButton>
                     )}
                 </TableContainer>
             </Box>
