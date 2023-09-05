@@ -2,7 +2,7 @@ export interface Tarefa {
     id: string;
     titulo: string;
     conteudo: string;
-    prazoIncial: string; 
+    prazoInicial: string; 
     prazoFinal: string; 
     cor: string;
     userId: string;

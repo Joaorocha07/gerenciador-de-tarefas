@@ -18,7 +18,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
     const [tarefas, setTarefas] = React.useState<Tarefa[]>([]);
     const [titulo, setTitulo] = React.useState('');
     const [conteudo, setConteudo] = React.useState('');
-    const [prazoIncial, setPrazoInicial] = React.useState('');
+    const [prazoInicial, setPrazoInicial] = React.useState('');
     const [prazoFinal, setPrazoFinal] = React.useState('');
     const [cor, setCor] = React.useState('');
 
@@ -46,7 +46,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                 id: generateUniqueId(),
                 titulo,
                 conteudo,
-                prazoIncial,
+                prazoInicial,
                 prazoFinal,
                 cor,
                 userId: userId,
@@ -190,7 +190,7 @@ export default function ModalTarefas({ isOpen, onClose }: IModalTarefasProps) {
                                     label="Prazo inicial"
                                     name="Prazo inicial"
                                     type="date"
-                                    value={prazoIncial}
+                                    value={prazoInicial}
                                     onChange={(e) => setPrazoInicial(e.target.value)}
                                     fullWidth
                                     InputLabelProps={{

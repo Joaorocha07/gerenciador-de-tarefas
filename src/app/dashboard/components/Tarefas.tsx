@@ -77,16 +77,13 @@ export default function Tarefas() {
             const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
             const tarefasSelecionadasDoUsuario = tarefasDoUsuarioLogado.filter(tarefa => idsTarefas.includes(tarefa.id));
 
-            // Se as tarefas selecionadas forem todas do usuário logado, exclua-as.
             if (tarefasSelecionadasDoUsuario.length === idsTarefas.length) {
                 const tarefasAtualizadas = tarefas.filter(tarefa => !idsTarefas.includes(tarefa.id));
                 setTarefas(tarefasAtualizadas);
                 setTarefasSelecionadas([]);
 
-                // Atualize o armazenamento local com as tarefas atualizadas, se necessário.
                 localStorage.setItem('tarefas', JSON.stringify(tarefasAtualizadas));
             } else {
-                // Caso contrário, mostre uma mensagem de erro ou aviso.
                 alert('Ainda não tem como apagar todos de uma vez!');
             }
         }
@@ -116,7 +113,7 @@ export default function Tarefas() {
                             transition: "background-color 0.3s",
                             cursor: "pointer",
                             "&:hover": {
-                                backgroundColor: "rgba(173, 216, 230, 0.5)", 
+                                backgroundColor: tarefa.cor ? `${tarefa.cor}` : "rgba(173, 216, 230, 0.5)", 
                             },
                         }}
                     >
@@ -128,7 +125,7 @@ export default function Tarefas() {
                         </TableCell>
                         <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.titulo}</TableCell>
                         <TableCell onClick={() => openModalForTarefa(tarefa)}>{extrairPrimeiras4Palavras(tarefa.conteudo)}</TableCell>
-                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoIncial}</TableCell>
+                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoInicial}</TableCell>
                         <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoFinal}</TableCell>
                         <TableCell onClick={() => openModalForTarefa(tarefa)}>
                             <div

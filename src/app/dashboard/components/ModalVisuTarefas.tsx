@@ -21,26 +21,16 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
 
     const [titulo, setTitulo] = React.useState('');
     const [conteudo, setConteudo] = React.useState('');
-    const [prazoIncial, setPrazoInicial] = React.useState('');
+    const [prazoInicial, setPrazoInicial] = React.useState('');
     const [prazoFinal, setPrazoFinal] = React.useState('');
     const [cor, setCor] = React.useState('');
-
-    // useEffect(() => {
-    //     if (tarefaSelecionada) {
-    //         // setTitulo(tarefaSelecionada.titulo);
-    //         setConteudo(tarefaSelecionada.conteudo);
-    //         setPrazoInicial(tarefaSelecionada.prazoInicial);
-    //         setPrazoFinal(tarefaSelecionada.prazoFinal);
-    //         setCor(tarefaSelecionada.cor);
-    //     }
-    // }, [tarefaSelecionada]);
 
     useEffect(() => {
         if (tarefaSelecionada) {
             if (modoEdicao) {
                 setTitulo(titulo);
                 setConteudo(conteudo);
-                setPrazoInicial(prazoIncial);
+                setPrazoInicial(prazoInicial);
                 setPrazoFinal(prazoFinal);
                 setCor(cor);
             } else {
@@ -51,11 +41,11 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
                 setCor(tarefaSelecionada.cor);
             }
         }
-    }, [conteudo, cor, modoEdicao, prazoFinal, prazoIncial, tarefaSelecionada, titulo]);
+    }, [conteudo, cor, modoEdicao, prazoFinal, prazoInicial, titulo, tarefaSelecionada]);
 
     const handleSalvarClick = () => {
         setModoEdicao(false); 
-        if (!titulo && !conteudo && !prazoIncial && !prazoFinal && !cor) {
+        if (!titulo && !conteudo && !prazoInicial && !prazoFinal && !cor) {
             exibirMensagem('Nenhuma alteração foi feita.', 'info');
             return;
         }
@@ -73,9 +63,9 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
 
             const tarefaEditada = {
                 ...tarefaSelecionada,
-                titulo: tarefaSelecionada.titulo,
+                titulo: titulo || tarefaSelecionada.titulo,
                 conteudo: conteudo || tarefaSelecionada.conteudo,
-                prazoInicial: prazoIncial || tarefaSelecionada.prazoInicial,
+                prazoInicial: prazoInicial || tarefaSelecionada.prazoInicial,
                 prazoFinal: prazoFinal || tarefaSelecionada.prazoFinal,
                 cor: cor || tarefaSelecionada.cor
             };
@@ -207,7 +197,7 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
                         <form action="">
                             <Box sx={{ marginBottom: '16px' }}>
                                 <TextField 
-                                    disabled
+                                    disabled={!modoEdicao}
                                     variant="outlined"
                                     label="Nome da tarefa"
                                     name="Nome da tarefa"
@@ -240,7 +230,7 @@ export default function ModalVisuTarefas({ isOpen, onClose, tarefaSelecionada }:
                                     label="Prazo inicial"
                                     name="Prazo inicial"
                                     type="date"
-                                    value={prazoIncial}
+                                    value={prazoInicial}
                                     onChange={(e) => setPrazoInicial(e.target.value)}
                                     fullWidth
                                     InputLabelProps={{

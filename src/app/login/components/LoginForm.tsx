@@ -38,12 +38,6 @@ function LoginForm() {
             return;
         }
 
-        if (senha === '12345678') {
-            exibirMensagem('A senha não pode conter números em sequências!', 'error');
-            setLoading(false);
-            return;
-        }
-
         const storedUsuarios = localStorage.getItem('usuarios');
 
         if (!storedUsuarios) {
