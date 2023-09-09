@@ -4,9 +4,11 @@ import AddIcon from '@mui/icons-material/Add';
 import React from "react";
 import ModalTarefas from "./ModalTarefas";
 import PesquisarTarefas from "./PesquisarTarefas";
+import ModalBackground from "./ModalBackground";
 
 export default function Titulo() {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [isModalOpenBackground, setIsModalOpenBackground] = React.useState(false);
 
     const openModal = (): void => {
         setIsModalOpen(true)
@@ -14,6 +16,14 @@ export default function Titulo() {
     
     const closeModal = (): void => {
         setIsModalOpen(false)
+    }
+    
+    const openModalBackgroud = (): void => {
+        setIsModalOpenBackground(true)
+    }
+    
+    const closeModalBackgroud = (): void => {
+        setIsModalOpenBackground(false)
     }
     return (
         <Box 
@@ -56,6 +66,7 @@ export default function Titulo() {
             )}
             <PesquisarTarefas />
             <Box 
+                onClick={openModalBackgroud}
                 sx={{  
                     display: 'flex', 
                     alignItems: 'center',
@@ -71,6 +82,9 @@ export default function Titulo() {
             >
                 <FilterIcon />
             </Box>
+            {isModalOpenBackground && (
+                <ModalBackground isOpen={isModalOpenBackground} onClose={closeModalBackgroud} />
+            )}
         </Box>
     )
 }

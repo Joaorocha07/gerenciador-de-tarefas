@@ -11,26 +11,27 @@ export default function PesquisarTarefas({ onSearch }: any) {
         const storedTarefas = localStorage.getItem('tarefas');
         const tarefas = storedTarefas ? JSON.parse(storedTarefas) : [];
         const usuarioLogadoString = localStorage.getItem('usuarioLogado');
-
+    
         if (usuarioLogadoString !== null) {
             const usuarioLogado = JSON.parse(usuarioLogadoString);
             const userId = usuarioLogado.id;
-            const tarefasDoUsuarioFiltradas = tarefas.filter((tarefa: { userId: any; titulo: string; }) =>
+            const pesquisa = buscar.toLowerCase();
+    
+            const tarefasDoUsuarioFiltradas = tarefas.filter((tarefa: { userId: any; titulo: string; conteudo: string }) =>
                 tarefa.userId === userId &&
-                tarefa.titulo.toLowerCase().includes(buscar.toLowerCase())
+                (tarefa.titulo.toLowerCase().includes(pesquisa) || tarefa.conteudo.toLowerCase().includes(pesquisa))
             );
-
+    
             if (tarefasDoUsuarioFiltradas.length > 0) {
-                localStorage.setItem('tarefaPesquisada', JSON.stringify
-                (tarefasDoUsuarioFiltradas[0]));
+                localStorage.setItem('tarefasPesquisadas', JSON.stringify(tarefasDoUsuarioFiltradas));
                 console.log(tarefasDoUsuarioFiltradas);
-            } else {
-                localStorage.setItem('tarefaPesquisada', JSON.stringify(null));
-                console.log('Tarefa não encontrada.');
                 localStorage.setItem('ultimaPesquisa', buscar);
+            } else {
+                localStorage.removeItem('tarefasPesquisadas');
             }
         }
     };
+    
     return (
         <>
             <TextField
@@ -39,6 +40,11 @@ export default function PesquisarTarefas({ onSearch }: any) {
                 size='small'
                 value={buscar}
                 onChange={(e) => setBuscar(e.target.value)}
+                onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                        handleSearch();
+                    }
+                }}
                 sx={{ 
                     width: '65%',
                     height: '40px', 

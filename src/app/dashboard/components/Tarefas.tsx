@@ -14,7 +14,7 @@ export default function Tarefas() {
     const [tarefaSelecionada, setTarefaSelecionada] = React.useState<Tarefa | null>(null);
     const [tarefasSelecionadas, setTarefasSelecionadas] = React.useState<string[]>([]);
     const [todosSelecionados, setTodosSelecionados] = React.useState(false);
-    const tarefasPorPagina = 6;
+    const tarefasPorPagina = 7;
 
     const openModal = (tarefa: Tarefa): void => {
         setTarefaSelecionada(tarefa);
@@ -94,50 +94,60 @@ export default function Tarefas() {
         setIsModalOpen(true);
     };
 
+    const getTarefasPesquisadas = () => {
+        const storedTarefasPesquisadas = localStorage.getItem('tarefasPesquisadas');
+        return storedTarefasPesquisadas ? JSON.parse(storedTarefasPesquisadas) : [];
+    };
+
     const renderTarefas = (): any => {
-        const listaIncial = (paginaAtual - 1) * tarefasPorPagina;
-        const listaFinal = Math.min(listaIncial + tarefasPorPagina, tarefas.length);
+        const listaInicial = (paginaAtual - 1) * tarefasPorPagina;
+        const listaFinal = Math.min(listaInicial + tarefasPorPagina, tarefas.length);
 
         const usuarioLogadoString = localStorage.getItem('usuarioLogado');
+        const tarefasPesquisadas = getTarefasPesquisadas();
 
         if (usuarioLogadoString !== null) {
 
             const usuarioLogado = JSON.parse(usuarioLogadoString);
 
-            const tarefasDoUsuarioLogado = tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
+            const ultimaPesquisa = localStorage.getItem('ultimaPesquisa');
 
-            return tarefasDoUsuarioLogado.slice(listaIncial, listaFinal).map((tarefa) => (
-                    <TableRow
-                        key={tarefa.id}
-                        sx={{
-                            transition: "background-color 0.3s",
-                            cursor: "pointer",
-                            "&:hover": {
-                                backgroundColor: tarefa.cor ? `${tarefa.cor}` : "rgba(173, 216, 230, 0.5)", 
-                            },
-                        }}
-                    >
-                        <TableCell>
-                            <Checkbox
-                                checked={tarefasSelecionadas.includes(tarefa.id)}
-                                onChange={() => toggleTarefaSelecionada(tarefa.id)}
-                            />
-                        </TableCell>
-                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.titulo}</TableCell>
-                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{extrairPrimeiras4Palavras(tarefa.conteudo)}</TableCell>
-                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoInicial}</TableCell>
-                        <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoFinal}</TableCell>
-                        <TableCell onClick={() => openModalForTarefa(tarefa)}>
-                            <div
-                                style={{
-                                    width: "20px", 
-                                    height: "20px",
-                                    borderRadius: '5px',
-                                    backgroundColor: `${tarefa.cor}`,
-                                }}
-                            />
-                        </TableCell>
-                    </TableRow>
+            const tarefasParaRender = ultimaPesquisa
+                ? ultimaPesquisa !== '' ? tarefasPesquisadas: []
+                : tarefas.filter(tarefa => tarefa.userId === usuarioLogado.id);
+
+            return tarefasParaRender.slice(listaInicial, listaFinal).map((tarefa: Tarefa) => (
+                <TableRow
+                    key={tarefa.id}
+                    sx={{
+                        transition: "background-color 0.3s",
+                        cursor: "pointer",
+                        "&:hover": {
+                            backgroundColor: tarefa.cor ? `${tarefa.cor}` : "rgba(173, 216, 230, 0.5)", 
+                        },
+                    }}
+                >
+                    <TableCell>
+                        <Checkbox
+                            checked={tarefasSelecionadas.includes(tarefa.id)}
+                            onChange={() => toggleTarefaSelecionada(tarefa.id)}
+                        />
+                    </TableCell>
+                    <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.titulo}</TableCell>
+                    <TableCell onClick={() => openModalForTarefa(tarefa)}>{extrairPrimeiras4Palavras(tarefa.conteudo)}</TableCell>
+                    <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoInicial}</TableCell>
+                    <TableCell onClick={() => openModalForTarefa(tarefa)}>{tarefa.prazoFinal}</TableCell>
+                    <TableCell onClick={() => openModalForTarefa(tarefa)}>
+                        <div
+                            style={{
+                                width: "20px", 
+                                height: "20px",
+                                borderRadius: '5px',
+                                backgroundColor: `${tarefa.cor}`,
+                            }}
+                        />
+                    </TableCell>
+                </TableRow>
             ));
         }
     };
@@ -205,7 +215,7 @@ export default function Tarefas() {
                         {renderTarefas()}
                     </TableBody>
                     </Table>
-                    {totalTarefasUsuarioLogado >= tarefasPorPagina && (
+                    {/* {totalTarefasUsuarioLogado >= tarefasPorPagina && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                             <Pagination
                                 count={Math.ceil(tarefas.length / tarefasPorPagina)}
@@ -213,6 +223,15 @@ export default function Tarefas() {
                                 onChange={handlePageChange}
                             />
                         </Box>
+                    )} */}
+                    {totalTarefasUsuarioLogado >= tarefasPorPagina && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                        <Pagination
+                            count={Math.ceil(totalTarefasUsuarioLogado / tarefasPorPagina)}
+                            page={paginaAtual}
+                            onChange={handlePageChange}
+                        />
+                    </Box>
                     )}
                     {tarefasSelecionadas.length > 0 && (
                         <IconButton
